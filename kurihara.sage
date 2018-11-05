@@ -11,20 +11,20 @@ def kurihara_number(E, p, n):
     non-vanishing are well-defined.
     """
     f = E.modular_symbol()
-    ell1, ell2 = n.prime_divisors()
-    K1 = GF(ell1)
-    if not ell1 in LOGS:
-        LOGS[ell1] = precompute_logs(ell1)
-    K2 = GF(ell2)
-    if not ell2 in LOGS:
-        LOGS[ell2] = precompute_logs(ell2)
+    ells = n.prime_divisors()
+    Kell = dict()
+    for ell in ells:
+        Kell[ell] = GF(ell)
+        if not ell in LOGS:
+            LOGS[ell] = precompute_logs(ell)
     K = GF(p)
     S = K(0)
-    for a in range(n):
+    for a in range(1, n):
         if gcd(a, n) == 1:
-            aa1 = K1(a)
-            aa2 = K2(a)
-            S = S + K(LOGS[ell1][aa1]) * K(LOGS[ell2][aa2]) * K(f(a/n))
+            mult = K(f(a/n))
+            for ell in ells:
+                mult *= K(LOGS[ell][Kell[ell](a)])
+            S = S + mult
     return S
 
 
