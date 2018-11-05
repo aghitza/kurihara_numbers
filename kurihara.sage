@@ -1,3 +1,6 @@
+LOGS = dict()
+
+
 def kurihara_number(E, p, n):
     """
     Return the Kurihara number for the elliptic curve E with respect to
@@ -8,17 +11,32 @@ def kurihara_number(E, p, n):
     non-vanishing are well-defined.
     """
     f = E.modular_symbol()
-    R1 = Integers(factor(n)[0][0])
-    g1 = R1.multiplicative_generator()
-    R2 = Integers(factor(n)[1][0])
-    g2 = R2.multiplicative_generator()
-    S = mod(0, p)
+    ell1, ell2 = n.prime_divisors()
+    K1 = GF(ell1)
+    g1 = K1.multiplicative_generator()
+    if not ell1 in LOGS:
+        LOGS[ell1] = precompute_logs(g1)
+    K2 = GF(ell2)
+    g2 = K2.multiplicative_generator()
+    if not ell2 in LOGS:
+        LOGS[ell2] = precompute_logs(g2)
+    K = GF(p)
+    S = K(0)
     for a in range(n):
         if gcd(a, n) == 1:
-            aa1 = mod(a, factor(n)[0][0])
-            aa2 = mod(a, factor(n)[1][0])
-            S = S + mod(aa1.log(g1), p) * mod(aa2.log(g2), p) * mod(f(a/n), p)
+            aa1 = K1(a)
+            aa2 = K2(a)
+            S = S + K(LOGS[ell1][aa1]) * K(LOGS[ell2][aa2]) * K(f(a/n))
     return S
+
+
+def precompute_logs(g):
+    K = g.parent()
+    logs = dict()
+    for a in K:
+        if a != 0:
+            logs[a] = a.log(g)
+    return logs
 
 
 def kolyvagin_primes(E, p, bound):
