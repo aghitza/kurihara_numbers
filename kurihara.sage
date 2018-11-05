@@ -13,13 +13,11 @@ def kurihara_number(E, p, n):
     f = E.modular_symbol()
     ell1, ell2 = n.prime_divisors()
     K1 = GF(ell1)
-    g1 = K1.multiplicative_generator()
     if not ell1 in LOGS:
-        LOGS[ell1] = precompute_logs(g1)
+        LOGS[ell1] = precompute_logs(ell1)
     K2 = GF(ell2)
-    g2 = K2.multiplicative_generator()
     if not ell2 in LOGS:
-        LOGS[ell2] = precompute_logs(g2)
+        LOGS[ell2] = precompute_logs(ell2)
     K = GF(p)
     S = K(0)
     for a in range(n):
@@ -30,8 +28,9 @@ def kurihara_number(E, p, n):
     return S
 
 
-def precompute_logs(g):
-    K = g.parent()
+def precompute_logs(ell):
+    K = GF(ell)
+    g = K.multiplicative_generator()
     logs = dict()
     for a in K:
         if a != 0:
