@@ -1,6 +1,3 @@
-LOGS = dict()
-
-
 def kurihara_number(E, p, n):
     """
     Return the Kurihara number for the elliptic curve E with respect to
@@ -10,6 +7,7 @@ def kurihara_number(E, p, n):
     on choices of multiplicative generators), but its vanishing and
     non-vanishing are well-defined.
     """
+    LOGS = dict()
     f = E.modular_symbol()
     ells = n.prime_divisors()
     Kell = dict()
@@ -21,10 +19,11 @@ def kurihara_number(E, p, n):
     S = K(0)
     for a in range(1, n):
         if gcd(a, n) == 1:
+            #print(RDF(a/n)*100)
             mult = K(f(a/n))
             for ell in ells:
                 mult *= K(LOGS[ell][Kell[ell](a)])
-            S = S + mult
+            S += mult
     return S
 
 
