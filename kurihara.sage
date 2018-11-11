@@ -10,6 +10,12 @@ def kurihara_number(E, p, n, verbose=False):
     LOGS = dict()
     from sage.libs.eclib.newforms import ECModularSymbol
     f = ECModularSymbol(E, sign=int(1))
+    # we're using the eclib implementation of modular symbols directly,
+    # and the normalisation is different than Sage's if the curve E has
+    # negative discriminant, hence the scaling factor
+    scale = 1
+    if E.discriminant() < 0:
+        scale = 2
     ells = n.prime_divisors()
     Kell = dict()
     if verbose:
@@ -29,7 +35,7 @@ def kurihara_number(E, p, n, verbose=False):
             for ell in ells:
                 mult *= K(LOGS[ell][Kell[ell](a)])
             S += mult
-    return S
+    return S/scale
 
 
 def precompute_logs(ell):
