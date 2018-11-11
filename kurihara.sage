@@ -1,4 +1,4 @@
-def kurihara_number(E, p, n):
+def kurihara_number(E, p, n, verbose=False):
     """
     Return the Kurihara number for the elliptic curve E with respect to
     the prime p and the product of Kolyvagin primes n.
@@ -11,13 +11,17 @@ def kurihara_number(E, p, n):
     f = E.modular_symbol()
     ells = n.prime_divisors()
     Kell = dict()
+    if verbose:
+        print("precomputing discrete logs...")
     for ell in ells:
         Kell[ell] = GF(ell)
         if not ell in LOGS:
             LOGS[ell] = precompute_logs(ell)
+    if verbose:
+        print("...done")
     K = GF(p)
     S = K(0)
-    for a in range(1, n):
+    for a in xsrange(1, n):
         if gcd(a, n) == 1:
             #print(RDF(a/n)*100)
             mult = K(f(a/n))
