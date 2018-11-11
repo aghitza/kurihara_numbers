@@ -8,7 +8,8 @@ def kurihara_number(E, p, n, verbose=False):
     non-vanishing are well-defined.
     """
     LOGS = dict()
-    f = E.modular_symbol()
+    from sage.libs.eclib.newforms import ECModularSymbol
+    f = ECModularSymbol(E, sign=int(1))
     ells = n.prime_divisors()
     Kell = dict()
     if verbose:
