@@ -1,7 +1,3 @@
-# cache Kurihara numbers
-KN = dict()
-
-
 def kurihara_graph(E, p, plst, verbose=False):
     res = []
     from sage.combinat.subset import SubsetsSorted
@@ -17,11 +13,7 @@ def kurihara_graph(E, p, plst, verbose=False):
     return tuple(res)
 
 
-def tikz_from_kurihara_graph(E, p, plst, kg, verbose=False):
-    pass
-
-
-def kurihara_number(E, p, n, verbose=False):
+def kurihara_number(E, p, n, recalculate=False, verbose=False):
     """
     Return the Kurihara number for the elliptic curve E with respect to
     the prime p and the product of Kolyvagin primes n.
@@ -30,8 +22,12 @@ def kurihara_number(E, p, n, verbose=False):
     on choices of multiplicative generators), but its vanishing and
     non-vanishing are well-defined.
     """
-    if n in KN:
-        return KN[n]
+    label = E.label() + '_' + str(p) + '__' + '_'.join([str(ell) for ell in n.prime_divisors()])
+    fname = 'data/' + label + '.txt'
+    if not recalculate and os.path.isfile(fname):
+        with open(fname, 'r') as f:
+            st = f.readline()
+            return GF(p)(st.strip())
     LOGS = dict()
     from sage.libs.eclib.newforms import ECModularSymbol
     f = ECModularSymbol(E, sign=int(1))
@@ -43,36 +39,37 @@ def kurihara_number(E, p, n, verbose=False):
         scale = 2
     ells = n.prime_divisors()
     Kell = dict()
+    L = GF(p)
     if verbose:
         print("precomputing discrete logs...")
     for ell in ells:
         Kell[ell] = GF(ell)
         if not ell in LOGS:
-            LOGS[ell] = precompute_logs(ell)
+            LOGS[ell] = precompute_logs(L, ell)
     if verbose:
         print("...done")
-    K = GF(p)
-    S = K(0)
+    S = L(0)
     for a in xsrange(1, n):
         if gcd(a, n) == 1:
             if verbose:
                 print(RDF(a/n)*100)
-            mult = K(f(a/n))
+            mult = L(f(a/n))
             for ell in ells:
-                mult *= K(LOGS[ell][Kell[ell](a)])
+                mult *= LOGS[ell][Kell[ell](a)]
             S += mult
     res = S/scale
-    KN[n] = res
+    with open(fname, 'w') as f:
+        f.write(str(res) + '\n')
     return res
 
 
-def precompute_logs(ell):
+def precompute_logs(L, ell):
     K = GF(ell)
     g = K.multiplicative_generator()
     logs = dict()
     for a in K:
         if a != 0:
-            logs[a] = a.log(g)
+            logs[a] = L(a.log(g))
     return logs
 
 
@@ -91,7 +88,7 @@ def kolyvagin_primes(E, p, bound):
 
 def check_prime(E, p):
     """
-    Return True if p satisfies Assumption 1.1.
+    Return True if the pair (E, p) satisfies Assumptions 1.1 and 1.2.
     """
     if p == 2:
         return False
@@ -107,4 +104,9 @@ def check_prime(E, p):
         if E.has_split_multiplicative_reduction(ell):
             if (ell-1) % p == 0:
                 return False
+    if E.manin_constant() != 1:
+        return False
+    rho = E.galois_representation()
+    if not rho.is_surjective(p):
+        return False
     return True
