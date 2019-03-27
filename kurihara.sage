@@ -1,3 +1,12 @@
+#********************************************************************
+#   Copyright (C) 2018-2019 Alexandru Ghitza and Chan-Ho Kim
+#
+#   Released under the GPL General Public License version 3.
+#   See LICENSE.md for details.
+#********************************************************************
+
+
+
 def kurihara_graph(E, p, plst, verbose=False):
     res = []
     from sage.combinat.subset import SubsetsSorted
